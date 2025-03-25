@@ -20,7 +20,7 @@ fields_metadata = data.get('fields', [])
 attribute_keys = {}
 geometry_keys = {"geometry_x": "REAL", "geometry_y": "REAL", "rings": "TEXT"}  
 
-# Map ArcGIS field types to SQLite types
+# Mapping  field types to SQLite types
 field_type_mapping = {
     "esriFieldTypeInteger": "INTEGER",
     "esriFieldTypeSmallInteger": "INTEGER",
@@ -40,16 +40,16 @@ for field in fields_metadata:
 # Combine attribute and geometry columns
 all_columns = {**attribute_keys, **geometry_keys}
 
-# Connect to SQLite
+
 conn = sqlite3.connect('zoning_data.db')
 cursor = conn.cursor()
 
-# Create table dynamically
+# Creating table dynamically
 columns_def = ', '.join([f'"{col}" {dtype}' for col, dtype in all_columns.items()])
 create_table_query = f'CREATE TABLE IF NOT EXISTS zoning ({columns_def})'
 cursor.execute(create_table_query)
 
-# Insert data into the table
+# Inserting data into the table
 insert_query = f'INSERT OR REPLACE INTO zoning ({", ".join(all_columns.keys())}) VALUES ({", ".join(["?" for _ in all_columns])})'
 
 data_to_insert = []
@@ -62,7 +62,7 @@ for feature in features:
     geometry_y = geometry.get("y")
     rings = json.dumps(geometry.get("rings", []))  
 
-    # Construct row properly
+    
     row = []
     for col in all_columns.keys():
         if col == "rings":
@@ -78,7 +78,6 @@ for feature in features:
 
 cursor.executemany(insert_query, data_to_insert)
 
-# Commit and close connection
 conn.commit()
 conn.close()
-print('Zoning data successfully stored in SQLite, including ring geometry.')
+print('Zoning data successfully stored.')

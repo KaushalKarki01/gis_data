@@ -1,6 +1,6 @@
 import requests
 import sqlite3
-import json  # Import json to handle JSON serialization
+import json  
 
 url = 'https://services5.arcgis.com/inY93B27l4TSbT7h/ArcGIS/rest/services/Properties_Owned_by_City_of_SSF_WFL1/FeatureServer/0/query'
 params = {
@@ -12,7 +12,7 @@ params = {
 
 response = requests.get(url, params=params)
 
-# Check response status
+
 if response.status_code != 200:
     print("Error fetching data:", response.status_code)
     exit()
@@ -25,7 +25,7 @@ fields_metadata = data.get('fields', [])
 attribute_keys = {}
 geometry_keys = {"geometry": "TEXT"}  # Store geometry as TEXT
 
-# Map ArcGIS field types to SQLite types
+# Mapping field types to SQLite types
 field_type_mapping = {
     "esriFieldTypeInteger": "INTEGER",
     "esriFieldTypeSmallInteger": "INTEGER",
@@ -36,7 +36,7 @@ field_type_mapping = {
     "esriFieldTypeGUID": "TEXT"
 }
 
-# Process attribute fields
+# Processing attribute fields
 for field in fields_metadata:
     field_name = field["name"]
     field_type = field_type_mapping.get(field["type"], "TEXT")  # Default to TEXT if type is unknown
@@ -49,12 +49,12 @@ all_columns = {**attribute_keys, **geometry_keys}
 conn = sqlite3.connect('cityProperties.db')
 cursor = conn.cursor()
 
-# Create table dynamically
+# Creatiing table dynamically
 columns_def = ', '.join([f'"{col}" {dtype}' for col, dtype in all_columns.items()])
 create_table_query = f'CREATE TABLE IF NOT EXISTS cityProperties ({columns_def})'
 cursor.execute(create_table_query)
 
-# Insert data into the table
+# Inserting data into the table
 insert_query = f'INSERT OR REPLACE INTO cityProperties ({", ".join(all_columns.keys())}) VALUES ({", ".join(["?" for _ in all_columns])})'
 
 data_to_insert = []
@@ -74,7 +74,7 @@ for feature in features:
 
 cursor.executemany(insert_query, data_to_insert)
 
-# Commit and close connection
+
 conn.commit()
 conn.close()
 print('City data successfully stored.')
